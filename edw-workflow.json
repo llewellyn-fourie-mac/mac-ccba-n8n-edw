@@ -1,0 +1,357 @@
+-{
+    "nodes": [
+        {
+            "parameters": {
+                "fromEmail": "noreply@macmobile.co",
+                "toEmail": "llewellyn@macmobile.co",
+                "subject": "={{ 'Employee SAP ' + $now.format('yyyy-MM-dd') }}",
+                "html": "<p>Hello,</p>\n<p>The <strong>Employee SAP</strong> has been successfully processed and uploaded to the FTP server.\n<p>Best regards,<br>n8n </p>",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 2.1,
+            "position": [
+                896,
+                64
+            ],
+            "id": "b21361a1-a268-47d1-9b29-ad8c78c9001d",
+            "name": "SMTP Success",
+            "webhookId": "d8634562-0351-44f5-b763-b10e9de4515d",
+            "credentials": {
+                "smtp": {
+                    "id": "41CMEtyOMzs0n3Tc",
+                    "name": "Mac-n8n-smtp2go"
+                }
+            },
+            "disabled": true
+        },
+        {
+            "parameters": {
+                "operation": "upload",
+                "path": "={{ 'sp_edw_employees_' + $now.format('yyyy-MM-dd_HH-mm') + '.csv' }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.ftp",
+            "typeVersion": 1,
+            "position": [
+                672,
+                160
+            ],
+            "id": "2e8a69e6-3445-4eb1-9921-7364600e571a",
+            "name": "FTP Upload CSV",
+            "disabled": true,
+            "onError": "continueErrorOutput"
+        },
+        {
+            "parameters": {
+                "fromEmail": "noreply@macmobile.co",
+                "toEmail": "llewellyn@macmobile.co",
+                "subject": "={{ ' FTP Server not reached (Employee SAP) - ' + $now.setZone('Africa/Johannesburg').format('yyyy-MM-dd') }}",
+                "html": "<p>Hello,</p>\n<p>The <strong>Employee SAP</strong> data was extracted successfully, but the <strong>FTP server</strong> is currently unreachable.</p>\n<p>Status: The CSV file was generated but could not be delivered to the remote path.</p>\n<p>Best regards,<br>n8n</p>",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 2.1,
+            "position": [
+                896,
+                256
+            ],
+            "id": "5296957e-311a-4580-b8aa-889a8875c62e",
+            "name": "FTP Server node error",
+            "webhookId": "d8634562-0351-44f5-b763-b10e9de4515d",
+            "credentials": {
+                "smtp": {
+                    "id": "41CMEtyOMzs0n3Tc",
+                    "name": "Mac-n8n-smtp2go"
+                }
+            },
+            "disabled": true
+        },
+        {
+            "parameters": {
+                "content": "Mac CCBA Adherence D365",
+                "height": 896,
+                "width": 1888,
+                "color": 5
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                336,
+                32
+            ],
+            "typeVersion": 1,
+            "id": "6c2561d3-914d-4180-a54d-1fd97a61eb63",
+            "name": "Sticky Note"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "type": "n8n-nodes-base.convertToFile",
+            "typeVersion": 1.1,
+            "position": [
+                1568,
+                480
+            ],
+            "id": "a2df832d-608c-43f9-995e-56cfe8398775",
+            "name": "Convert to File",
+            "executeOnce": false
+        },
+        {
+            "parameters": {
+                "jsCode": "// 1. Reference the data directly without creating a large variable\nconst input = $input.all()[0].json;\n\n// 2. Find the array in your SQL result (e.g., 'rows', 'data', or the object itself)\nconst dataArray = Object.values(input).find(val => Array.isArray(val)) || (Array.isArray(input) ? input : []);\n\n// 3. Use .map() to return the items in the EXACT format n8n requires\nreturn dataArray.map(row => {\n  return {\n    json: (typeof row === 'object' && row !== null) ? row : { value: row }\n  };\n});"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1344,
+                576
+            ],
+            "id": "1a1c8d28-25df-447d-ba30-951b06531598",
+            "name": "Normalize – Flatten rows into items",
+            "executeOnce": false,
+            "onError": "continueErrorOutput"
+        },
+        {
+            "parameters": {
+                "fromEmail": "noreply@macmobile.co",
+                "toEmail": "llewellyn@macmobile.co",
+                "subject": "={{ ' CRITICAL: Stored Procedure Call Failed (Employee SAP) - ' + $now.setZone('Africa/Johannesburg').format('yyyy-MM-dd') }}",
+                "html": "<p>Hello,</p>\n<p>The <strong>Employee SAP</strong> job has failed because the call for the stored procedure failed.</p>\n<p>Likely causes include the database being offline, unreachable, or a permission issue with the procedure.</p>\n<p>Best regards,<br>n8n</p>",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 2.1,
+            "position": [
+                1344,
+                768
+            ],
+            "id": "7d8b19a8-3dc9-4188-8790-e8846aa86f11",
+            "name": "Call Proc node failed",
+            "webhookId": "d8634562-0351-44f5-b763-b10e9de4515d",
+            "credentials": {
+                "smtp": {
+                    "id": "41CMEtyOMzs0n3Tc",
+                    "name": "Mac-n8n-smtp2go"
+                }
+            },
+            "disabled": true
+        },
+        {
+            "parameters": {
+                "fromEmail": "noreply@macmobile.co",
+                "subject": "={{ ' Data Formatting Error (Employee SAP) - ' + $now.setZone('Africa/Johannesburg').format('yyyy-MM-dd') }}",
+                "html": "<p>Hello,</p>\n<p>The <strong>Employee SAP</strong> database is online, but the data processing failed.</p>\n<p>Status: The stored procedure may have returned zero rows or an invalid structure for normalization.</p>\n<p>Best regards,<br>n8n</p>",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 2.1,
+            "position": [
+                1568,
+                672
+            ],
+            "id": "3f7fd59d-400d-49c3-a92d-4f2d17780d6c",
+            "name": "Format/Normalisation node failed",
+            "webhookId": "d8634562-0351-44f5-b763-b10e9de4515d",
+            "credentials": {
+                "smtp": {
+                    "id": "41CMEtyOMzs0n3Tc",
+                    "name": "Mac-n8n-smtp2go"
+                }
+            },
+            "disabled": true
+        },
+        {
+            "parameters": {
+                "name": "={{ $('Define Jobs').first().json.file_name_prefix }}\n",
+                "driveId": {
+                    "__rl": true,
+                    "value": "0ADiY79hir2uKUk9PVA",
+                    "mode": "list",
+                    "cachedResultName": "MACmobile - n8n",
+                    "cachedResultUrl": "https://drive.google.com/drive/folders/0ADiY79hir2uKUk9PVA"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "1qgGDlv3FGxkyF5h-e1-PjYCheYSdnt2k",
+                    "mode": "list",
+                    "cachedResultName": "CCBA - EDW Output Files",
+                    "cachedResultUrl": "https://drive.google.com/drive/folders/1qgGDlv3FGxkyF5h-e1-PjYCheYSdnt2k"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                1792,
+                480
+            ],
+            "id": "4146ac2a-72ba-40d5-9f16-a4f5481f839b",
+            "name": "Upload file",
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "GtoEADy6f8JoyVD0",
+                    "name": "Mac - Google Drive"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "executeQuery",
+                "query": "{{ $json.stored_procedure }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.mySql",
+            "typeVersion": 2.5,
+            "position": [
+                1120,
+                672
+            ],
+            "id": "c12346d8-6fd4-4e3f-afc3-af4a4c39f460",
+            "name": "CALL Proc",
+            "executeOnce": true,
+            "alwaysOutputData": false,
+            "credentials": {
+                "mySql": {
+                    "id": "FRFCWTkovqyUO1CG",
+                    "name": "Mac-CCBA-Rep"
+                }
+            },
+            "onError": "continueErrorOutput"
+        },
+        {
+            "parameters": {
+                "jsCode": "return [\n  {\n    \"job_name\": \"Adherence D365\",\n    \"stored_procedure\": \"CALL ccba_api.sp_adherence_ff ('', 'D365')\",\n    \"file_name_prefix\": \"Adherence_D365\"\n  }\n];"
+            },
+            "id": "00776a96-99d4-41ba-accd-4aa5c95ff703",
+            "name": "Define Jobs",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                896,
+                672
+            ]
+        },
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {}
+                    ]
+                }
+            },
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.3,
+            "position": [
+                672,
+                672
+            ],
+            "id": "29aee177-7a82-4c6e-bcf6-6fc28c9d2679",
+            "name": "Scheduled Trigger",
+            "retryOnFail": true
+        }
+    ],
+    "connections": {
+        "FTP Upload CSV": {
+            "main": [
+                [
+                    {
+                        "node": "SMTP Success",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "FTP Server node error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Convert to File": {
+            "main": [
+                [
+                    {
+                        "node": "Upload file",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Normalize – Flatten rows into items": {
+            "main": [
+                [
+                    {
+                        "node": "Convert to File",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Format/Normalisation node failed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format/Normalisation node failed": {
+            "main": [
+                []
+            ]
+        },
+        "Upload file": {
+            "main": [
+                []
+            ]
+        },
+        "CALL Proc": {
+            "main": [
+                [
+                    {
+                        "node": "Normalize – Flatten rows into items",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Call Proc node failed",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Define Jobs": {
+            "main": [
+                [
+                    {
+                        "node": "CALL Proc",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Scheduled Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Define Jobs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "instanceId": "819d5cbfcc6e81cc9f00a90970fa7e33993eabf361fd8c37bc3b7947d9e68a1d"
+    }
+}
